@@ -1,0 +1,11 @@
+{
+  "id": "four-meme-ai",
+  "name": "Four.meme AI",
+  "description": "Create and trade meme tokens on four.meme (BSC). CLI fourmeme + skill.",
+  "skills": ["skills/four-meme-integration"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "description": "No plugin-level config; use skills.entries[\"four-meme-ai\"].env for PRIVATE_KEY."
+  }
+}

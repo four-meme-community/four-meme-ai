@@ -1,0 +1,57 @@
+{
+  "name": "@four-meme/four-meme-ai",
+  "version": "1.0.4",
+  "description": "Four.meme AI skills for creating and trading meme tokens (BSC only)",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "fourmeme": "./bin/fourmeme.cjs"
+  },
+  "openclaw": {
+    "extensions": [
+      "./plugin.ts"
+    ]
+  },
+  "scripts": {
+    "fourmeme": "node bin/fourmeme.cjs",
+    "verify": "tsx skills/four-meme-integration/scripts/get-public-config.ts && tsx skills/four-meme-integration/scripts/verify-events.ts",
+    "build": "tsc",
+    "config": "tsx skills/four-meme-integration/scripts/get-public-config.ts",
+    "create-api": "tsx skills/four-meme-integration/scripts/create-token-api.ts",
+    "create-chain": "tsx skills/four-meme-integration/scripts/create-token-chain.ts",
+    "token-info": "tsx skills/four-meme-integration/scripts/get-token-info.ts",
+    "token-list": "tsx skills/four-meme-integration/scripts/token-list.ts",
+    "token-get": "tsx skills/four-meme-integration/scripts/token-get.ts",
+    "token-rankings": "tsx skills/four-meme-integration/scripts/token-rankings.ts",
+    "quote-buy": "tsx skills/four-meme-integration/scripts/quote-buy.ts",
+    "quote-sell": "tsx skills/four-meme-integration/scripts/quote-sell.ts",
+    "buy": "tsx skills/four-meme-integration/scripts/execute-buy.ts",
+    "sell": "tsx skills/four-meme-integration/scripts/execute-sell.ts",
+    "send": "tsx skills/four-meme-integration/scripts/send-token.ts",
+    "8004-register": "tsx skills/four-meme-integration/scripts/8004-register.ts",
+    "8004-balance": "tsx skills/four-meme-integration/scripts/8004-balance.ts",
+    "events": "tsx skills/four-meme-integration/scripts/get-recent-events.ts",
+    "tax-info": "tsx skills/four-meme-integration/scripts/get-tax-token-info.ts"
+  },
+  "keywords": [
+    "four.meme",
+    "meme",
+    "token",
+    "bsc",
+    "agent",
+    "skill",
+    "openclaw"
+  ],
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.0.0",
+    "viem": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
