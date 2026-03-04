@@ -94,7 +94,7 @@ npx fourmeme verify
 ```
 (In project dir, use `npx fourmeme`; or run `npm link` then `fourmeme` from anywhere.)
 
-This runs **config** (four.meme API) and **events** for the last 50 blocks on BSC. No private key or on-chain writes. For full verification steps, see [VERIFICATION.md](VERIFICATION.md).
+This runs **config** (four.meme API) and **events** for the last 50 blocks on BSC. No private key or on-chain writes.
 
 ## Docs
 
@@ -106,3 +106,4 @@ This runs **config** (four.meme API) and **events** for the last 50 blocks on BS
 ## License
 
 MIT
+
