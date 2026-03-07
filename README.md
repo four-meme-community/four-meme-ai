@@ -20,16 +20,33 @@ When the user needs to create or trade meme tokens on four.meme (BSC), use the *
 - **Tax token fee/tax info**: `fourmeme tax-info <tokenAddress>`. See `references/tax-token-query.md` and `token-tax-info.md`.
 - **Send BNB/ERC20**: `fourmeme send <toAddress> <amountWei> [tokenAddress]` to transfer from the trading wallet.
 - **EIP‑8004 identity NFT**: `fourmeme 8004-register <name> [imageUrl] [description]` and `fourmeme 8004-balance <ownerAddress>`.
-- **CLI** (after `npm install`): use **`npx fourmeme <command> [args]`**. Run `npx fourmeme --help` for all commands, including:
-  - Config: `npx fourmeme config`
-  - Create (one-shot): `npx fourmeme create-instant --image=... --name=... --short-name=... --desc=... --label=...` (same args as create-api; optional `--pre-sale=0.001` in BNB)
-  - Create (two steps): `npx fourmeme create-api ...` → `npx fourmeme create-chain ...`
-  - Trade/info: `npx fourmeme token-info <tokenAddress>`, `npx fourmeme quote-buy`, `npx fourmeme quote-sell`
-  - Execute trade: `npx fourmeme buy <token> amount|funds ...`, `npx fourmeme sell <token> <amountWei> [minFundsWei]` (needs PRIVATE_KEY)
-  - Events: `npx fourmeme events <fromBlock> [toBlock]`
-  - Tax: `npx fourmeme tax-info <tokenAddress>`
-  - EIP‑8004: `npx fourmeme 8004-register ...`, `npx fourmeme 8004-balance ...`
-  - Verify: `npx fourmeme verify`
+- **CLI**: `npx fourmeme <command> [args]`. Run `npx fourmeme --help` for the full list. See **Commands and parameters** below.
+
+## Commands and parameters
+
+| Command | Parameters | Description |
+|--------|------------|-------------|
+| `config` | *(none)* | Public config (raisedToken). No auth. |
+| `create-api` | `--image=` `--name=` `--short-name=` `--desc=` `--label=` `[--web-url=]` `[--twitter-url=]` `[--telegram-url=]` `[--pre-sale=<BNB>]` `[--fee-plan=false]` `[--tax-options=<path>]` or `[--tax-token --tax-fee-rate=5 ...]` | Create token API only. Label: `Meme|AI|Defi|Games|Infra|De-Sci|Social|Depin|Charity|Others`. Env: PRIVATE_KEY. |
+| `create-chain` | `<createArgHex>` `<signatureHex>` `[--value=<wei>]` or `--` (stdin JSON) | Submit createToken on BSC. Env: PRIVATE_KEY. |
+| `create-instant` | `--image=` `--name=` `--short-name=` `--desc=` `--label=` `[--web-url=]` `[--twitter-url=]` `[--telegram-url=]` `[--pre-sale=<BNB>]` `[--fee-plan=false]` `[--value=<wei>]` `[--tax-options=<path>]` or `[--tax-token --tax-fee-rate=5 ...]` | One-shot create (API + chain). Same options as create-api plus `--value=` override. Env: PRIVATE_KEY. |
+| `token-info` | `<tokenAddress>` | On-chain token info (Helper3). |
+| `token-list` | `[--orderBy=Hot]` `[--pageIndex=1]` `[--pageSize=30]` `[--tokenName=]` `[--symbol=]` `[--labels=]` `[--listedPancake=false]` | REST token list. |
+| `token-get` | `<tokenAddress>` | REST token detail + trading info. |
+| `token-rankings` | `<orderBy>` `[--barType=HOUR24]` | Rankings. orderBy: `Time|ProgressDesc|TradingDesc|Hot|Graduated`. |
+| `quote-buy` | `<tokenAddress>` `<amountWei>` `[fundsWei]` | Estimate buy (no tx). Use 0 for amount or funds. |
+| `quote-sell` | `<tokenAddress>` `<amountWei>` | Estimate sell (no tx). |
+| `buy` | `<token>` `amount` `<amountWei>` `<maxFundsWei>` | Buy fixed amount. Env: PRIVATE_KEY. |
+| `buy` | `<token>` `funds` `<fundsWei>` `<minAmountWei>` | Buy with fixed quote. Env: PRIVATE_KEY. |
+| `sell` | `<tokenAddress>` `<amountWei>` `[minFundsWei]` | Execute sell. Env: PRIVATE_KEY. |
+| `send` | `<toAddress>` `<amountWei>` `[tokenAddress]` | Send BNB or ERC20. Omit tokenAddress for BNB. Env: PRIVATE_KEY. |
+| `8004-register` | `<name>` `[imageUrl]` `[description]` | EIP-8004 register NFT. Env: PRIVATE_KEY. |
+| `8004-balance` | `<ownerAddress>` | EIP-8004 query balance. |
+| `events` | `<fromBlock>` `[toBlock]` | TokenManager2 events (BSC). |
+| `tax-info` | `<tokenAddress>` | TaxToken fee/tax config. |
+| `verify` | *(none)* | Config + events (last 50 blocks). Read-only. |
+
+Create token optional (omit if empty): `--web-url=`, `--twitter-url=`, `--telegram-url=`. Presale: `--pre-sale=<BNB>` in ether (e.g. `0.001`). Tax: `--tax-options=<path>` or `--tax-token --tax-fee-rate=5 --tax-burn-rate=0 --tax-divide-rate=0 --tax-liquidity-rate=100 --tax-recipient-rate=0 --tax-recipient-address= --tax-min-sharing=100000` (burn+divide+liquidity+recipient=100).
 
 ## Install (project)
 

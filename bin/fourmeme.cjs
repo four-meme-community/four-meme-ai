@@ -50,47 +50,87 @@ function printHelp() {
 
 Usage: npx fourmeme <command> [args...]
 
-(In project dir, use npx fourmeme; npm install does not add fourmeme to PATH.)
+Commands and parameters:
 
-Commands:
-  config                    Get public config (raisedToken). No auth.
-  create-api --image= --name= --short-name= --desc= --label= [options]
-                            Create token API flow. Env: PRIVATE_KEY.
-  create-chain <createArgHex> <signatureHex>
-                            Submit createToken tx on BSC. Or: fourmeme create-chain -- (stdin JSON)
-  create-instant --image= --name= --short-name= --desc= --label= [options]
-                            One-shot: create-api + create-chain (same args as create-api).
+  config
+    (no args) Get public config (raisedToken). No auth.
+
+  create-api
+    Required: --image=<path> --name=<name> --short-name=<symbol> --desc=<text> --label=<label>
+    Optional: --web-url= --twitter-url= --telegram-url= (omit if empty)
+              --pre-sale=<BNB> (ether units, e.g. 0.001)
+              --fee-plan=false
+              --tax-options=<path>   OR  --tax-token --tax-fee-rate=5 --tax-burn-rate=0
+              --tax-divide-rate=0 --tax-liquidity-rate=100 --tax-recipient-rate=0
+              --tax-recipient-address= --tax-min-sharing=100000
+    Label: Meme|AI|Defi|Games|Infra|De-Sci|Social|Depin|Charity|Others
+    Env: PRIVATE_KEY.
+
+  create-chain
+    <createArgHex> <signatureHex>  [--value=<wei>]
+    Or: fourmeme create-chain -- (read createArg, signature, creationFeeWei from stdin JSON)
+    Env: PRIVATE_KEY, optional CREATION_FEE_WEI.
+
+  create-instant
+    Required: --image=<path> --name=<name> --short-name=<symbol> --desc=<text> --label=<label>
+    Optional: --web-url= --twitter-url= --telegram-url= (omit if empty)
+              --pre-sale=<BNB> (ether units, e.g. 0.001)
+              --fee-plan=false
+              --value=<wei> (override computed creation fee; default from API)
+              --tax-options=<path>   OR  --tax-token --tax-fee-rate=5 --tax-burn-rate=0
+              --tax-divide-rate=0 --tax-liquidity-rate=100 --tax-recipient-rate=0
+              --tax-recipient-address= --tax-min-sharing=100000
+    Label: Meme|AI|Defi|Games|Infra|De-Sci|Social|Depin|Charity|Others
+    One-shot: API + submit createToken. Env: PRIVATE_KEY.
+
   token-info <tokenAddress>
-                            Get token info from Helper3 (BSC, on-chain).
-  token-list [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]
-                            Token list (REST API, filter/query).
-  token-get <tokenAddress>
-                            Token detail + trading info (REST API get/v2).
-  token-rankings <orderBy> [--barType=HOUR24]
-                            Rankings: orderBy=Time|ProgressDesc|TradingDesc|Hot|Graduated. barType only for TradingDesc.
-  quote-buy <token> <amountWei> [fundsWei]
-                            Estimate buy (no tx). Use 0 for amount or funds.
-  quote-sell <token> <amountWei>
-                            Estimate sell (no tx).
-  buy <token> amount <amountWei> <maxFundsWei>
-                            Execute buy: fixed token amount. Env: PRIVATE_KEY.
-  buy <token> funds <fundsWei> <minAmountWei>
-                            Execute buy: spend fixed quote (e.g. BNB). Env: PRIVATE_KEY.
-  sell <token> <amountWei> [minFundsWei]
-                            Execute sell. Env: PRIVATE_KEY.
-  send <toAddress> <amountWei> [tokenAddress]
-                            Send BNB or ERC20 to address. Omit tokenAddress for BNB. Env: PRIVATE_KEY.
-  8004-register <name> [imageUrl] [description]
-                            EIP-8004: register identity NFT. Env: PRIVATE_KEY.
-  8004-balance <ownerAddress>
-                            EIP-8004: query NFT balance of address (read-only).
-  events <fromBlock> [toBlock]
-                            TokenManager2 events (BSC). Default toBlock: latest.
-  tax-info <tokenAddress>
-                            TaxToken fee/tax config (BSC, creatorType 5 only).
-  verify                    Run config + events for last 50 blocks (read-only check).
+    On-chain token info (Helper3). No auth.
 
-Env: PRIVATE_KEY, BSC_RPC_URL. See SKILL.md for full docs.
+  token-list
+    [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]
+    REST token list. No auth.
+
+  token-get <tokenAddress>
+    REST token detail + trading info. No auth.
+
+  token-rankings <orderBy> [--barType=HOUR24]
+    orderBy: Time|ProgressDesc|TradingDesc|Hot|Graduated. barType for TradingDesc. No auth.
+
+  quote-buy <tokenAddress> <amountWei> [fundsWei]
+    Estimate buy. Use 0 for amount or funds. No tx.
+
+  quote-sell <tokenAddress> <amountWei>
+    Estimate sell. No tx.
+
+  buy <tokenAddress> amount <amountWei> <maxFundsWei>
+    Buy fixed token amount. Env: PRIVATE_KEY.
+
+  buy <tokenAddress> funds <fundsWei> <minAmountWei>
+    Spend fixed quote (e.g. BNB). Env: PRIVATE_KEY.
+
+  sell <tokenAddress> <amountWei> [minFundsWei]
+    Execute sell. Env: PRIVATE_KEY.
+
+  send <toAddress> <amountWei> [tokenAddress]
+    Send BNB or ERC20. Omit tokenAddress for BNB. Env: PRIVATE_KEY.
+
+  8004-register <name> [imageUrl] [description]
+    EIP-8004 register identity NFT. Env: PRIVATE_KEY.
+
+  8004-balance <ownerAddress>
+    EIP-8004 query NFT balance. Read-only.
+
+  events <fromBlock> [toBlock]
+    TokenManager2 events (BSC). toBlock default: latest.
+
+  tax-info <tokenAddress>
+    TaxToken fee/tax config (creatorType 5). Read-only.
+
+  verify
+    (no args) Config + events last 50 blocks. Read-only.
+
+Env: PRIVATE_KEY (required for create-api, create-chain, create-instant, buy, sell, send, 8004-register).
+     BSC_RPC_URL, CREATION_FEE_WEI optional. See SKILL.md.
 `);
 }
 
