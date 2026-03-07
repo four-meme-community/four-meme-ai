@@ -18,6 +18,7 @@ const commands = {
   config: 'get-public-config.ts',
   'create-api': 'create-token-api.ts',
   'create-chain': 'create-token-chain.ts',
+  'create-instant': 'create-token-instant.ts',
   'token-info': 'get-token-info.ts',
   'token-list': 'token-list.ts',
   'token-get': 'token-get.ts',
@@ -53,10 +54,12 @@ Usage: npx fourmeme <command> [args...]
 
 Commands:
   config                    Get public config (raisedToken). No auth.
-  create-api <img> <name> <symbol> <desc> <label> [tax.json]
+  create-api --image= --name= --short-name= --desc= --label= [options]
                             Create token API flow. Env: PRIVATE_KEY.
   create-chain <createArgHex> <signatureHex>
                             Submit createToken tx on BSC. Or: fourmeme create-chain -- (stdin JSON)
+  create-instant --image= --name= --short-name= --desc= --label= [options]
+                            One-shot: create-api + create-chain (same args as create-api).
   token-info <tokenAddress>
                             Get token info from Helper3 (BSC, on-chain).
   token-list [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]

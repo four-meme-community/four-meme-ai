@@ -3,24 +3,59 @@
  * Four.meme - create token API flow (nonce → login → upload image → create).
  * Outputs createArg and signature (hex) for use with create-token-chain.ts.
  *
- * Usage:
- *   npx tsx create-token-api.ts <imagePath> <name> <shortName> <desc> <label> [taxOptions.json]
+ * Usage: all options as --key=value
+ *   npx tsx create-token-api.ts --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI [options]
  *
- * Env: PRIVATE_KEY (wallet private key, no 0x prefix ok)
- * Optional env: WEB_URL, TWITTER_URL, TELEGRAM_URL, PRE_SALE ("0"), FEE_PLAN ("false")
- * Tax token: pass path to a JSON file with "tokenTaxInfo" as last arg, or set TAX_TOKEN=1 and
- *   TAX_FEE_RATE (1|3|5|10), TAX_BURN_RATE, TAX_DIVIDE_RATE, TAX_LIQUIDITY_RATE, TAX_RECIPIENT_RATE,
- *   TAX_RECIPIENT_ADDRESS, TAX_MIN_SHARING (e.g. 100000). burn+divide+liquidity+recipient must = 100.
- *
+ * Required: --image= --name= --short-name= --desc= --label=
+ * Optional: --web-url= --twitter-url= --telegram-url= (omit if empty); --pre-sale=0 (in BNB/ether, e.g. 0.001); --fee-plan=false --tax-options=<path>
+ * Tax token: --tax-options=tax.json or --tax-token --tax-fee-rate=5 ... (burn+divide+liquidity+recipient=100)
  * Labels: Meme | AI | Defi | Games | Infra | De-Sci | Social | Depin | Charity | Others
+ * Env: PRIVATE_KEY
  */
 
+import { createPublicClient, http, parseAbi } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { bsc } from 'viem/chains';
 import { readFileSync, existsSync } from 'node:fs';
 import { basename } from 'node:path';
 
 const API_BASE = 'https://four.meme/meme-api/v1';
+const TOKEN_MANAGER2_BSC = '0x5c952063c7fc8610FFDB798152D69F0B9550762b' as const;
+const TM2_ABI = parseAbi([
+  'function _launchFee() view returns (uint256)',
+  'function _tradingFeeRate() view returns (uint256)',
+]);
 const NETWORK_CODE = 'BSC';
+
+/** Get option from argv: --key=value or --key value; fallback to env (key as UPPER_SNAKE). */
+function getOpt(key: string, defaultValue: string): string {
+  const prefix = key + '=';
+  for (let i = 2; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (arg === key && i + 1 < process.argv.length) return process.argv[i + 1];
+    if (arg.startsWith(prefix)) return arg.slice(prefix.length);
+  }
+  return process.env[key.replace(/-/g, '_').toUpperCase()] ?? defaultValue;
+}
+
+/** Get boolean option from argv: --fee-plan or --fee-plan=true; fallback to env. */
+function getOptBool(key: string, defaultValue: boolean): boolean {
+  const prefix = key + '=';
+  for (let i = 2; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (arg === key) return true;
+    if (arg.startsWith(prefix)) {
+      const v = arg.slice(prefix.length).toLowerCase();
+      return v === '1' || v === 'true' || v === 'yes';
+    }
+  }
+  const envKey = key.replace(/-/g, '_').toUpperCase();
+  if (process.env[envKey] !== undefined) {
+    const v = process.env[envKey]!.toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes';
+  }
+  return defaultValue;
+}
 
 function toHex(value: string): string {
   if (value.startsWith('0x')) return value;
@@ -39,19 +74,20 @@ async function main() {
   const account = privateKeyToAccount(pk);
   const address = account.address;
 
-  const imagePath = process.argv[2];
-  const name = process.argv[3];
-  const shortName = process.argv[4];
-  const desc = process.argv[5];
-  const label = process.argv[6];
-  const taxOptionsPath = process.argv[7]; // optional JSON file with tokenTaxInfo
+  const imagePath = getOpt('--image', '');
+  const name = getOpt('--name', '');
+  const shortName = getOpt('--short-name', '');
+  const desc = getOpt('--desc', '');
+  const label = getOpt('--label', '');
+  const taxOptionsPath = getOpt('--tax-options', '');
 
   if (!imagePath || !name || !shortName || !desc || !label) {
     console.error(
-      'Usage: npx tsx create-token-api.ts <imagePath> <name> <shortName> <desc> <label> [taxOptions.json]'
+      'Usage: npx tsx create-token-api.ts --image=<path> --name= --short-name= --desc= --label= [options]'
     );
-    console.error('Example: npx tsx create-token-api.ts ./logo.png MyToken MTK "My desc" AI');
-    console.error('Tax token: add path to JSON with tokenTaxInfo, or use TAX_* env vars (see SKILL.md).');
+    console.error('Example: npx tsx create-token-api.ts --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI');
+    console.error('Required: --image= --name= --short-name= --desc= --label=');
+    console.error('Optional: --web-url= --twitter-url= --telegram-url= --pre-sale=0 --fee-plan=false --tax-options=<path>');
     process.exit(1);
   }
   if (!existsSync(imagePath)) {
@@ -65,7 +101,7 @@ async function main() {
     console.error('Invalid label. Use one of:', validLabels.join(', '));
     process.exit(1);
   }
-  const labelCanonical = labelNorm; // API 要求与列表完全一致（含大小写）
+  const labelCanonical = labelNorm; // API expects exact label from list (case-sensitive)
 
   // 1. Get nonce
   const nonceRes = await fetch(`${API_BASE}/private/user/nonce/generate`, {
@@ -150,7 +186,7 @@ async function main() {
   }
 
   // 5. Build create body and optional tokenTaxInfo
-  // raisedAmount / totalSupply / saleRate 等固定参数从 raisedToken 或文档固定值对齐 API-CreateToken.02-02-2026.md
+  // raisedAmount / totalSupply / saleRate from raisedToken or docs (API-CreateToken)
   const launchTime = Date.now();
   const totalSupply =
     typeof (raisedToken as { totalAmount?: string | number }).totalAmount !== 'undefined'
@@ -177,33 +213,40 @@ async function main() {
     funGroup: false,
     label: labelCanonical,
     lpTradingFee: 0.0025,
-    webUrl: process.env.WEB_URL ?? '',
-    twitterUrl: process.env.TWITTER_URL ?? '',
-    telegramUrl: process.env.TELEGRAM_URL ?? '',
-    preSale: process.env.PRE_SALE ?? '0',
+    preSale: getOpt('--pre-sale', '0'),
     clickFun: false,
     symbol: (raisedToken as { symbol: string }).symbol,
     dexType: 'PANCAKE_SWAP',
     rushMode: false,
     onlyMPC: false,
-    feePlan: process.env.FEE_PLAN === 'true',
+    feePlan: getOptBool('--fee-plan', false),
   };
+  const webUrl = getOpt('--web-url', '');
+  const twitterUrl = getOpt('--twitter-url', '');
+  const telegramUrl = getOpt('--telegram-url', '');
+  if (webUrl != null && webUrl !== '') body.webUrl = webUrl;
+  if (twitterUrl != null && twitterUrl !== '') body.twitterUrl = twitterUrl;
+  if (telegramUrl != null && telegramUrl !== '') body.telegramUrl = telegramUrl;
 
   let tokenTaxInfo: Record<string, unknown> | null = null;
-  if (taxOptionsPath && taxOptionsPath.endsWith('.json') && existsSync(taxOptionsPath)) {
+  if (taxOptionsPath && existsSync(taxOptionsPath)) {
     const taxOpts = JSON.parse(readFileSync(taxOptionsPath, 'utf8'));
     if (taxOpts.tokenTaxInfo && typeof taxOpts.tokenTaxInfo === 'object') {
       tokenTaxInfo = taxOpts.tokenTaxInfo as Record<string, unknown>;
     }
   }
-  if (!tokenTaxInfo && process.env.TAX_TOKEN === '1') {
-    const feeRate = Number(process.env.TAX_FEE_RATE ?? 5);
-    const burnRate = Number(process.env.TAX_BURN_RATE ?? 0);
-    const divideRate = Number(process.env.TAX_DIVIDE_RATE ?? 0);
-    const liquidityRate = Number(process.env.TAX_LIQUIDITY_RATE ?? 100);
-    const recipientRate = Number(process.env.TAX_RECIPIENT_RATE ?? 0);
-    const recipientAddress = process.env.TAX_RECIPIENT_ADDRESS ?? '';
-    const minSharing = Number(process.env.TAX_MIN_SHARING ?? 100000);
+  const taxFromCli =
+    getOptBool('--tax-token', false) ||
+    getOpt('--tax-fee-rate', '') !== '' ||
+    process.env.TAX_TOKEN === '1';
+  if (!tokenTaxInfo && taxFromCli) {
+    const feeRate = Number(getOpt('--tax-fee-rate', '5'));
+    const burnRate = Number(getOpt('--tax-burn-rate', '0'));
+    const divideRate = Number(getOpt('--tax-divide-rate', '0'));
+    const liquidityRate = Number(getOpt('--tax-liquidity-rate', '100'));
+    const recipientRate = Number(getOpt('--tax-recipient-rate', '0'));
+    const recipientAddress = getOpt('--tax-recipient-address', '');
+    const minSharing = Number(getOpt('--tax-min-sharing', '100000'));
     const sum = burnRate + divideRate + liquidityRate + recipientRate;
     if (sum !== 100) {
       throw new Error(`Tax rates must sum to 100 (burn+divide+liquidity+recipient). Got ${sum}.`);
@@ -241,8 +284,35 @@ async function main() {
   const createArgHex = toHex(rawArg);
   const signatureHex = toHex(rawSig);
 
-  const out = { createArg: createArgHex, signature: signatureHex };
+  // Estimate required value (CREATION_FEE_WEI) for createToken tx
+  const rpcUrl = process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org';
+  const client = createPublicClient({ chain: bsc, transport: http(rpcUrl) });
+  const launchFee = await client.readContract({
+    address: TOKEN_MANAGER2_BSC,
+    abi: TM2_ABI,
+    functionName: '_launchFee',
+  });
+  const preSaleStr = String(body.preSale ?? '0');
+  // API preSale is in ether (BNB); convert to wei for value calculation
+  const presaleWei = BigInt(Math.round(parseFloat(preSaleStr || '0') * 1e18));
+  const quoteIsBnb = (raisedToken as { symbol?: string }).symbol === 'BNB';
+  let requiredValueWei = launchFee;
+  if (presaleWei > 0n && quoteIsBnb) {
+    const feeRate = await client.readContract({
+      address: TOKEN_MANAGER2_BSC,
+      abi: TM2_ABI,
+      functionName: '_tradingFeeRate',
+    });
+    const tradingFee = (presaleWei * feeRate) / 10000n;
+    requiredValueWei = launchFee + presaleWei + tradingFee;
+  }
+  const creationFeeWei = requiredValueWei.toString();
+
+  const out = { createArg: createArgHex, signature: signatureHex, creationFeeWei };
   console.log(JSON.stringify(out, null, 2));
+  console.error(
+    `\n→ For create-token-chain pass --value=${creationFeeWei} (or more).`
+  );
 }
 
 main().catch((e) => {

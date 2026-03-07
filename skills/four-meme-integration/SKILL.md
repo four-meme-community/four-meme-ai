@@ -125,7 +125,7 @@ After collecting the above, execute in this order (handled by scripts or CLI):
 4. **Create (API)** — GET `/public/config` for raisedToken (do not modify); `POST /private/token/create` with name, shortName, desc, imgUrl, label, raisedToken, etc.; get createArg, signature.
 5. **Create (chain)** — Call `TokenManager2.createToken(createArg, sign)` on BSC to complete on-chain creation.
 
-Commands: first `fourmeme create-api <imagePath> <name> <shortName> <desc> <label> [taxOptions.json]`, then `fourmeme create-chain <createArgHex> <signatureHex>`. Full API and parameters: [references/api-create-token.md](references/api-create-token.md); script flow and examples: [references/create-token-scripts.md](references/create-token-scripts.md); Tax token params: [references/token-tax-info.md](references/token-tax-info.md).
+Commands: first `fourmeme create-api --image= --name= --short-name= --desc= --label= [options]`, then `fourmeme create-chain <createArgHex> <signatureHex>`. Or one-shot: `fourmeme create-instant --image= ...`. Full API and parameters: [references/api-create-token.md](references/api-create-token.md); script flow and examples: [references/create-token-scripts.md](references/create-token-scripts.md); Tax token params: [references/token-tax-info.md](references/token-tax-info.md).
 
 ## Agent workflow: buy/sell from rankings or events
 
@@ -210,7 +210,7 @@ When the user asks to create a token, the Agent must ask in this order:
 
 1. **Tax token or not?**  
    Ask: “Do you want to create a tax (Tax) token? If not, it will be a normal token.”  
-   - If **no**: use `fourmeme create-api <imagePath> <name> <shortName> <desc> <label>` (no sixth argument, no TAX_* env vars).  
+   - If **no**: use `fourmeme create-api --image= --name= --short-name= --desc= --label=` (no --tax-options, no --tax-token).  
    - If **yes**: continue to step 2.
 
 2. **Tax parameters** (only when user chose tax token)  
@@ -221,8 +221,8 @@ When the user asks to create a token, the Agent must ask in this order:
    - **minSharing**: Minimum token balance to participate in dividends (in ether units, e.g. 100000, 1000000).
 
    Then either:  
-   - **Option A**: Write `{ "tokenTaxInfo": { ... } }` to a JSON file and call `fourmeme create-api ... <path/to/tax.json>`.  
-   - **Option B**: Set env vars TAX_TOKEN=1, TAX_FEE_RATE, TAX_BURN_RATE, TAX_DIVIDE_RATE, TAX_LIQUIDITY_RATE, TAX_RECIPIENT_RATE, TAX_RECIPIENT_ADDRESS (optional), TAX_MIN_SHARING, then run `fourmeme create-api <imagePath> <name> <shortName> <desc> <label>` (no sixth argument).
+   - **Option A**: Write `{ "tokenTaxInfo": { ... } }` to a JSON file and call `fourmeme create-api --image= ... --tax-options=<path>`.
+   - **Option B**: Run `fourmeme create-api --image= ... --tax-token --tax-fee-rate=5 ...` (and other --tax-* as needed).
 
 **Step 1 – Config (optional)**  
 ```bash
@@ -246,9 +246,9 @@ Requires `PRIVATE_KEY`. Outputs `createArg` and `signature` (hex).
 **Optional env vars** (defaults if omitted): `WEB_URL`, `TWITTER_URL`, `TELEGRAM_URL`; `PRE_SALE` (default `"0"`); `FEE_PLAN` (`"true"` = AntiSniperFeeMode, default `"false"`).
 
 ```bash
-fourmeme create-api <imagePath> <name> <shortName> <desc> <label> [taxOptions.json]
-# Example: fourmeme create-api ./logo.png MyToken MTK "Description" AI
-# Tax: fourmeme create-api ./logo.png TaxToken TAX "Tax token" Meme tax.json
+fourmeme create-api --image=<path> --name= --short-name= --desc= --label= [--tax-options=path]
+# Example: fourmeme create-api --image=./logo.png --name=MyToken --short-name=MTK --desc="Description" --label=AI
+# Tax: fourmeme create-api --image=./logo.png --name=TaxToken --short-name=TAX --desc="Tax token" --label=Meme --tax-options=tax.json
 ```
 
 **Tax token**  
@@ -294,9 +294,9 @@ fourmeme create-chain <createArgHex> <signatureHex>
 To **create and submit on-chain in one go**, the Agent should:
 
 1. **Run create-api** to get signature data (same as Step 2 above; JSON with `createArg` and `signature`):  
-   ```bash
-   fourmeme create-api <imagePath> <name> <shortName> <desc> <label> [taxOptions.json]
-   ```  
+   ```bash  
+   fourmeme create-api --image= --name= --short-name= --desc= --label= [--tax-options=path]
+   ```
    Parse stdout JSON for `createArg` and `signature` (already hex strings).
 
 2. **Run create-chain** with those two values:  

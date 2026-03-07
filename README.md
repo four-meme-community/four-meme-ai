@@ -14,13 +14,24 @@ Safety, user agreement, and detailed agent behavior requirements are defined in 
 
 When the user needs to create or trade meme tokens on four.meme (BSC), use the **four-meme-integration** skill:
 
-- **Create token (API + chain)**: Prefer the CLI flow `fourmeme create-api ...` → `fourmeme create-chain ...`. Under the hood this runs: `get-public-config.ts` (optional) → `create-token-api.ts` (image + name/symbol/desc/label, env `PRIVATE_KEY`) → `create-token-chain.ts` (createArg + signature from API). Creation is BSC only; no extra BNB is sent by default (set `CREATION_FEE_WEI` to attach a value if needed). See `SKILL.md` and `references/api-create-token.md` / `create-token-scripts.md` for full details and required user questions.
+- **Create token (API + chain)**: Use **`fourmeme create-instant ...`** for one-shot create (API + submit createToken in one command), or the two-step flow `fourmeme create-api ...` → `fourmeme create-chain ...`. Both use the same args: `--image=`, `--name=`, `--short-name=`, `--desc=`, `--label=` (and optional `--pre-sale=<BNB>` in ether units, `--web-url=`, etc.). Creation is BSC only; value (launch fee + presale if any) is computed automatically for create-instant. See `SKILL.md` and `references/create-token-scripts.md` for full details and required user questions.
 - **Trade (buy/sell)**: Use Helper3 `getTokenInfo` to get version and tokenManager; only version 2 (TokenManager2) is supported. Use `fourmeme quote-buy`/`quote-sell` for estimates, then `fourmeme buy`/`sell` to execute. **BSC only.**
 - **Event listening**: `fourmeme events <fromBlock> [toBlock]` to fetch TokenCreate, TokenPurchase, TokenSale, LiquidityAdded from TokenManager2. See `references/event-listening.md`.
 - **Tax token fee/tax info**: `fourmeme tax-info <tokenAddress>`. See `references/tax-token-query.md` and `token-tax-info.md`.
 - **Send BNB/ERC20**: `fourmeme send <toAddress> <amountWei> [tokenAddress]` to transfer from the trading wallet.
 - **EIP‑8004 identity NFT**: `fourmeme 8004-register <name> [imageUrl] [description]` and `fourmeme 8004-balance <ownerAddress>`.
-- **CLI** (after `npm install`): use **`npx fourmeme <command> [args]`**. Run `npx fourmeme --help` for all commands, including:\n  - Config: `npx fourmeme config`\n  - Create: `npx fourmeme create-api ...` → `npx fourmeme create-chain ...`\n  - Trade/info: `npx fourmeme token-info <tokenAddress>`, `npx fourmeme quote-buy`, `npx fourmeme quote-sell`\n  - Execute trade: `npx fourmeme buy <token> amount|funds ...`, `npx fourmeme sell <token> <amountWei> [minFundsWei]` (needs PRIVATE_KEY)\n  - Events: `npx fourmeme events <fromBlock> [toBlock]`\n  - Tax: `npx fourmeme tax-info <tokenAddress>`\n  - EIP‑8004: `npx fourmeme 8004-register ...`, `npx fourmeme 8004-balance ...`\n  - Verify: `npx fourmeme verify`\n\n## Install (project)
+- **CLI** (after `npm install`): use **`npx fourmeme <command> [args]`**. Run `npx fourmeme --help` for all commands, including:
+  - Config: `npx fourmeme config`
+  - Create (one-shot): `npx fourmeme create-instant --image=... --name=... --short-name=... --desc=... --label=...` (same args as create-api; optional `--pre-sale=0.001` in BNB)
+  - Create (two steps): `npx fourmeme create-api ...` → `npx fourmeme create-chain ...`
+  - Trade/info: `npx fourmeme token-info <tokenAddress>`, `npx fourmeme quote-buy`, `npx fourmeme quote-sell`
+  - Execute trade: `npx fourmeme buy <token> amount|funds ...`, `npx fourmeme sell <token> <amountWei> [minFundsWei]` (needs PRIVATE_KEY)
+  - Events: `npx fourmeme events <fromBlock> [toBlock]`
+  - Tax: `npx fourmeme tax-info <tokenAddress>`
+  - EIP‑8004: `npx fourmeme 8004-register ...`, `npx fourmeme 8004-balance ...`
+  - Verify: `npx fourmeme verify`
+
+## Install (project)
 
 ```bash
 cd four-meme-ai
@@ -48,7 +59,7 @@ Then run commands so that the shell loads `.env` before invoking `fourmeme` (e.g
 ```bash
 export PRIVATE_KEY=your_hex_private_key
 export BSC_RPC_URL=https://bsc-dataseed.binance.org
-npx fourmeme create-api ./logo.png MyToken MTK "Desc" AI
+npx fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="Desc" --label=AI
 ```
 
 - **PRIVATE_KEY**: Required for any command that signs or sends a transaction (create-api, create-chain, buy, sell, send, 8004-register). Hex string; `0x` prefix optional.
@@ -94,7 +105,7 @@ npx fourmeme verify
 ```
 (In project dir, use `npx fourmeme`; or run `npm link` then `fourmeme` from anywhere.)
 
-This runs **config** (four.meme API) and **events** for the last 50 blocks on BSC. No private key or on-chain writes.
+This runs **config** (four.meme API) and **events** for the last 50 blocks on BSC. No private key or on-chain writes. For full verification steps, see [VERIFICATION.md](VERIFICATION.md).
 
 ## Docs
 
@@ -106,4 +117,3 @@ This runs **config** (four.meme API) and **events** for the last 50 blocks on BS
 ## License
 
 MIT
-
