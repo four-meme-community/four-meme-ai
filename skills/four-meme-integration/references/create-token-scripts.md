@@ -1,21 +1,34 @@
 # Create Token Scripts (Four.meme)
 
-## One-shot (create-token-instant)
+**Recommended:** Use `fourmeme create-instant` for one-shot token creation (API + on-chain in one command). Use the step-by-step flow only when you need to inspect or modify the API output before submitting on-chain.
+
+## One-shot (create-instant) — recommended
 
 **create-token-instant.ts** runs API create + on-chain submit in one command. Same args as create-token-api; on success submits createToken and outputs `txHash`.
 
-```bash
-# Same as create-token-api, all --key=value
-npx tsx .../create-token-instant.ts --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI
-# Or via CLI
-fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI
-```
+- All options as `--key=value`; no positionals.
+- **Required**: `--image=`, `--name=`, `--short-name=`, `--desc=`, `--label=`.
+- **Optional**: `--web-url=`, `--twitter-url=`, `--telegram-url=` (only sent when non-empty); `--pre-sale=0` (**presale in ether units**, e.g. `0.001` for 0.001 BNB, not wei); `--fee-plan=false`, `--tax-options=<path>`; `--value=<wei>` (default to be auto calculated, override BNB value sent; otherwise API output `creationFeeWei` is used).
+- **Tax token**: `--tax-options=tax.json` or `--tax-token` with `--tax-fee-rate=5` `--tax-burn-rate=0` `--tax-divide-rate=0` `--tax-liquidity-rate=100` `--tax-recipient-rate=0` `--tax-recipient-address=` `--tax-min-sharing=100000` (burn+divide+liquidity+recipient=100).
+- **Label** (exactly one): `Meme` | `AI` | `Defi` | `Games` | `Infra` | `De-Sci` | `Social` | `Depin` | `Charity` | `Others`.
+- **Env**: `PRIVATE_KEY`; RPC via `BSC_RPC_URL`.
+- **Flow**: nonce → login → upload image → GET public config → POST create → submit `TokenManager2.createToken` on BSC.
+- **Output**: JSON `{ "txHash" }`.
 
-Optional `--value=wei` overrides the value; otherwise API output `creationFeeWei` is used. Env: `PRIVATE_KEY`, optional `BSC_RPC_URL`.
+```bash
+# Via CLI (recommended)
+fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI
+
+# With presale (BNB, ether units)
+fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI --pre-sale=0.001
+
+# Tax token
+fourmeme create-instant --image=./logo.png --name=TaxToken --short-name=TAX --desc="Tax" --label=Meme --tax-options=tax.json
+```
 
 ---
 
-## Step-by-step flow
+## Step-by-step flow (create-api → create-chain)
 
 1. **get-public-config.ts** (optional)  
    Fetches `raisedToken` from `https://four.meme/meme-api/v1/public/config`. Use when building the create body manually.
@@ -53,6 +66,13 @@ Optional `--value=wei` overrides the value; otherwise API output `creationFeeWei
 - Contract uses basis-point rate: `trading_fee = presale_wei × fee_rate / 10000` (integer division).  
 - `fee_rate` from TokenManager2 `_tradingFeeRate()` (basis points).  
 - If the contract enforces a minimum fee per trade, use `max(computed trading_fee, minimum_fee)`.
+
+## Example (instant, recommended)
+
+```bash
+export PRIVATE_KEY=your_hex_private_key
+fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="My desc" --label=AI
+```
 
 ## Example (piped)
 
