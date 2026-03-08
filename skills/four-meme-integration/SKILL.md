@@ -1,7 +1,7 @@
 ---
 name: four-meme-ai
 description: |
-  CLI tool to create and trade meme tokens on four.meme (BSC only). Returns structured JSON for config, token info, quotes, events, and TaxToken tax info.
+  CLI tool for creating and trading meme tokens on Four.Meme (BSC), with structured JSON outputs for config, token details, pricing quotes, on-chain events, and TaxToken fee configuration.
 
   
 
@@ -10,7 +10,7 @@ allowed-tools:
   - Bash(npx fourmeme *)
 license: MIT
 metadata:
-  {"author":"Four.meme AI Skill","version":"1.0.0","openclaw":{"requires":{"env":["PRIVATE_KEY"]},"primaryEnv":"PRIVATE_KEY","optionalEnv":["BSC_RPC_URL"]}}
+  {"author":"Four.meme AI Skill","version":"1.0.4","openclaw":{"requires":{"env":["PRIVATE_KEY"]},"primaryEnv":"PRIVATE_KEY","optionalEnv":["BSC_RPC_URL"]}}
 ---
 
 ## [Agent must follow] User agreement and security notice on first use
@@ -174,7 +174,7 @@ Set **PRIVATE_KEY** and optionally **BSC_RPC_URL** via the process environment s
 ### Declared and optional environment variables
 
 - **Declared in registry metadata** (injected by OpenClaw when skill is enabled): **PRIVATE_KEY** (required for write operations). Optional in metadata: **BSC_RPC_URL** (scripts fall back to default BSC RPC if unset).
-- **Not in metadata; optional, may be set in env or project `.env`**: **BSC_RPC_URL**, **CREATION_FEE_WEI** (extra BNB on create), **TAX_TOKEN**, **TAX_FEE_RATE**, **TAX_BURN_RATE**, **TAX_DIVIDE_RATE**, **TAX_LIQUIDITY_RATE**, **TAX_RECIPIENT_RATE**, **TAX_RECIPIENT_ADDRESS**, **TAX_MIN_SHARING**, **WEB_URL**, **TWITTER_URL**, **TELEGRAM_URL**, **PRE_SALE**, **FEE_PLAN**, **8004_NFT_ADDRESS** / **EIP8004_NFT_ADDRESS**. Only **PRIVATE_KEY** is required for signing; others have defaults or are used only for specific commands (see Create token flow, EIP-8004, etc.).
+- **Not in metadata; optional, may be set in env or project `.env`**: **BSC_RPC_URL**, **CREATION_FEE_WEI** (extra BNB on create), **WEB_URL**, **TWITTER_URL**, **TELEGRAM_URL**, **PRE_SALE**, **FEE_PLAN**, **8004_NFT_ADDRESS** / **EIP8004_NFT_ADDRESS**. Only **PRIVATE_KEY** is required for signing; others have defaults or are used only for specific commands (see Create token flow, EIP-8004, etc.). Tax token params use CLI only (`--tax-options=` or `--tax-token --tax-fee-rate=...`).
 
 ### Execution and install
 
@@ -230,20 +230,28 @@ fourmeme config
 ```
 
 **Step 2 – Create token (API)**  
-Requires `PRIVATE_KEY`. Outputs `createArg` and `signature` (hex).
+Requires `PRIVATE_KEY`. Outputs `createArg`, `signature` (hex), and `creationFeeWei` (for create-chain `--value=`).
 
-| Position | Argument | Description |
+All parameters are passed as `--key=value`. Script also accepts the same keys as env vars (e.g. `WEB_URL`, `PRE_SALE`).
+
+| Required | Argument | Description |
 |----------|----------|-------------|
-| 1 | `imagePath` | Local image path (jpeg/png/gif/bmp/webp) |
-| 2 | `name` | Token full name |
-| 3 | `shortName` | Token symbol (e.g. MTK) |
-| 4 | `desc` | Description text |
-| 5 | `label` | Category label (see list below) |
-| 6 | `[taxOptions.json]` | Optional; path to JSON containing `tokenTaxInfo` for tax token |
+| ✓ | `--image=<path>` | Local image path (jpeg/png/gif/bmp/webp) |
+| ✓ | `--name=` | Token full name |
+| ✓ | `--short-name=` | Token symbol (e.g. MTK) |
+| ✓ | `--desc=` | Description text |
+| ✓ | `--label=` | Category label (see list below) |
+
+| Optional | Argument | Description |
+|----------|----------|-------------|
+| | `--web-url=` | HTTPS URL (omit or empty to not send) |
+| | `--twitter-url=` | Twitter URL (omit if empty) |
+| | `--telegram-url=` | Telegram URL (omit if empty) |
+| | `--pre-sale=` | Presale amount in **BNB (ether units)**, e.g. `0.001`; default `0` |
+| | `--fee-plan=` | `true` = AntiSniperFeeMode; default `false` |
+| | `--tax-options=<path>` | Path to JSON with `tokenTaxInfo` (tax token); or use --tax-token + --tax-* below |
 
 **Label** (exactly one): `Meme` \| `AI` \| `Defi` \| `Games` \| `Infra` \| `De-Sci` \| `Social` \| `Depin` \| `Charity` \| `Others`.
-
-**Optional env vars** (defaults if omitted): `WEB_URL`, `TWITTER_URL`, `TELEGRAM_URL`; `PRE_SALE` (default `"0"`); `FEE_PLAN` (`"true"` = AntiSniperFeeMode, default `"false"`).
 
 ```bash
 fourmeme create-api --image=<path> --name= --short-name= --desc= --label= [--tax-options=path]
@@ -252,10 +260,10 @@ fourmeme create-api --image=<path> --name= --short-name= --desc= --label= [--tax
 ```
 
 **Tax token**  
-- **Option 1**: Last argument = path to JSON file with `{ "tokenTaxInfo": { ... } }`; fields see “tokenTaxInfo parameters” below.  
-- **Option 2**: Env vars: `TAX_TOKEN=1`, `TAX_FEE_RATE` (1|3|5|10), `TAX_BURN_RATE` / `TAX_DIVIDE_RATE` / `TAX_LIQUIDITY_RATE` / `TAX_RECIPIENT_RATE` (sum = 100), `TAX_RECIPIENT_ADDRESS`, `TAX_MIN_SHARING` (e.g. 100000). See [references/token-tax-info.md](references/token-tax-info.md).
+- **Option 1**: `--tax-options=<path>` — path to JSON file with `{ "tokenTaxInfo": { ... } }`; fields see “tokenTaxInfo parameters” below.  
+- **Option 2**: CLI: `--tax-token --tax-fee-rate=5 --tax-burn-rate=0 --tax-divide-rate=0 --tax-liquidity-rate=100 --tax-recipient-rate=0 --tax-recipient-address= --tax-min-sharing=100000` (burn+divide+liquidity+recipient = 100). See [references/token-tax-info.md](references/token-tax-info.md).
 
-**tokenTaxInfo parameters** (required for tax token, via JSON or env):
+**tokenTaxInfo parameters** (required for tax token, via JSON or CLI):
 
 | Field | Type | Description | Constraint |
 |-------|------|-------------|------------|
@@ -285,9 +293,10 @@ Example (5% fee, 20% burn, 30% dividend, 40% liquidity, 10% recipient):
 
 **Step 3 – Create token (chain)**  
 ```bash
-fourmeme create-chain <createArgHex> <signatureHex>
-# Or pipe: fourmeme create-api ... | fourmeme create-chain --
+fourmeme create-chain <createArgHex> <signatureHex> [--value=<wei>]
+# Or pipe (reads createArg, signature, creationFeeWei from JSON): fourmeme create-api ... | fourmeme create-chain --
 ```
+`--value=` overrides BNB value sent; if omitted and not piped, script uses stdin JSON `creationFeeWei` or 0.
 
 #### Full automated create flow
 
