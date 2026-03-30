@@ -87,14 +87,17 @@ Commands and parameters:
     On-chain token info (Helper3). No auth.
 
   token-list
-    [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]
-    REST token list. No auth.
+    POST /public/token/search. Legacy: [--orderBy=] [--tokenName=] [--listedPancake=] …
+    New: [--type=] [--listType=] [--keyword=] [--tag=] [--status=] [--sort=] [--version=] [--pageIndex=] [--pageSize=].
+         Legacy queryMode mapping: [--queryMode=Binance|USD1] (infers listType BIN/BIN_DEX or USD1/USD1_DEX by listedPancake).
+    No auth.
 
   token-get <tokenAddress>
     REST token detail + trading info. No auth.
 
-  token-rankings <orderBy> [--barType=HOUR24]
-    orderBy: Time|ProgressDesc|TradingDesc|Hot|Graduated. barType for TradingDesc. No auth.
+  token-rankings <orderBy|type> [--barType=HOUR24] [--pageSize=] [--symbol=] [--version=] [--rankingKind=] [--minCap=] [--maxCap=] [--minVol=] [--maxVol=] [--minHold=] [--maxHold=] …
+    POST /public/token/ranking. Legacy: Time|ProgressDesc|TradingDesc|Hot|Graduated; or native type e.g. VOL_DAY_1.
+    No auth.
 
   quote-buy <tokenAddress> <amountWei> [fundsWei]
     Estimate buy. Use 0 for amount or funds. No tx.

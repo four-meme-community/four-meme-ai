@@ -4,19 +4,21 @@ Base: `https://four.meme/meme-api/v1`. Requests need `Accept: application/json`;
 
 ## 1. Token list (filter / paginate)
 
-**GET** `/private/token/query`
+**POST** `/public/token/search`  
+JSON body: `type`, `listType`, `pageIndex`, `pageSize`, `status`, `sort`, optional `keyword`, `symbol`, `tag` (array), `version`.
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| orderBy | Sort order | Hot, Time, ... |
-| tokenName | Filter by token name | Empty or name |
-| symbol | Filter by symbol | Empty or symbol |
-| labels | Filter by label | Empty or label |
-| listedPancake | Listed on Pancake | false / true |
-| pageIndex | Page number | 1 |
-| pageSize | Page size | 30 |
+| Parameter | Description |
+|-----------|-------------|
+| type | Ranking sort context: NEW, HOT, PROGRESS, VOL, LAST, CAP, DEX, BURN, … |
+| listType | NOR, NOR_DEX, BIN, USD1, BIN_DEX, USD1_DEX, ADV |
+| status | PUBLISH, TRADE, ALL |
+| sort | DESC, ASC |
+| keyword | Search keyword |
+| symbol | Quote symbol (e.g. BNB, USDT) |
+| tag | Label filters (e.g. Meme, AI) |
+| version | V9 (tax), V10 (AI); omit for all |
 
-CLI: `fourmeme token-list [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]`
+CLI: `fourmeme token-list` — legacy flags still map to the above (e.g. `--orderBy` → `type`, `--tokenName` → `keyword`, `--labels` → `tag`, `--listedPancake=false` → `status=PUBLISH`). See script header for full list.
 
 ## 2. Token detail and trading info
 
@@ -24,17 +26,19 @@ CLI: `fourmeme token-list [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tok
 
 CLI: `fourmeme token-get <tokenAddress>`
 
-## 3. Rankings (advanced)
+## 3. Rankings
 
-**POST** `/private/token/query/advanced`  
-Body (JSON): `{ "orderBy": "<value>" }` or `{ "orderBy": "TradingDesc", "barType": "HOUR24" }`
+**POST** `/public/token/ranking`  
+JSON body: `type` (required RankingType), `pageSize`, optional `rankingKind`, `version`, `symbol`, `minCap`, `maxCap`, `minVol`, `maxVol`, `minHold`, `maxHold`.
 
-| orderBy | Description |
-|---------|-------------|
-| Time | Newest tokens |
-| ProgressDesc | Fundraise progress ranking |
-| TradingDesc | 24h trading volume (can use barType: HOUR24) |
-| Hot | Hot ranking |
-| Graduated | Recently graduated / launched |
+| Legacy CLI orderBy | Maps to type |
+|--------------------|--------------|
+| Time | NEW |
+| ProgressDesc | PROGRESS |
+| TradingDesc | VOL_DAY_1 (default); `--barType` selects VOL_HOUR_1, VOL_HOUR_4, VOL_MIN_30, VOL_MIN_5, … |
+| Hot | HOT |
+| Graduated | DEX |
 
-CLI: `fourmeme token-rankings <orderBy> [--barType=HOUR24]`
+You may also pass a native `type` as the first argument (e.g. `VOL_DAY_1`, `CAP`, `BURN`).
+
+CLI: `fourmeme token-rankings <orderBy|type> [--barType=HOUR24] [--pageSize=20] [--symbol=] [--version=] …`

@@ -120,9 +120,9 @@ Set **PRIVATE_KEY** and optionally **BSC_RPC_URL** via the process environment s
 |------|---------|------|
 | Public config | `fourmeme config` | Get raisedToken / config (no auth) |
 | Token info (on-chain) | `fourmeme token-info <tokenAddress>` | Version, tokenManager, price, offers (BSC Helper3) |
-| Token list (REST) | `fourmeme token-list [--orderBy=] [--pageIndex=] [--pageSize=] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=]` | Filtered, paginated token list |
+| Token list (REST) | `fourmeme token-list` — POST `/public/token/search`; legacy flags `[--orderBy=] …` plus legacy `--queryMode=Binance|USD1` (infers `listType`), or new `[--type=] [--listType=] [--keyword=] [--tag=] [--status=] [--sort=] [--version=]` | Filtered, paginated token list |
 | Token detail (REST) | `fourmeme token-get <tokenAddress>` | Token detail and trading info (get/v2) |
-| Token rankings (REST) | `fourmeme token-rankings <orderBy> [--barType=HOUR24]` | Time / ProgressDesc / TradingDesc / Hot / Graduated; barType for TradingDesc |
+| Token rankings (REST) | `fourmeme token-rankings <orderBy|type> [--barType=…]` | POST `/public/token/ranking`; legacy orderBy or native RankingType (e.g. VOL_DAY_1); optional filters `--pageSize` `--symbol` `--version` `--rankingKind` `minCap` `maxCap` `minVol` `maxVol` `minHold` `maxHold` … |
 | Buy quote | `fourmeme quote-buy <token> <amountWei> [fundsWei]` | Estimate only; no transaction |
 | Sell quote | `fourmeme quote-sell <token> <amountWei>` | Estimate only; no transaction |
 | **Execute buy** | `fourmeme buy <token> amount <amountWei> <maxFundsWei>` | Buy fixed amount (needs PRIVATE_KEY) |
@@ -210,10 +210,13 @@ On-chain query (Helper3); returns version, tokenManager, price, offers, etc.
 
 Four.meme REST API; use `Accept: application/json`; no login or cookie.
 
-**Token list (filter / paginate)**  
+**Token list (filter / paginate)** — `POST /public/token/search`  
 ```bash
 fourmeme token-list [--orderBy=Hot] [--pageIndex=1] [--pageSize=30] [--tokenName=] [--symbol=] [--labels=] [--listedPancake=false]
+fourmeme token-list [--type=HOT] [--listType=NOR] [--keyword=] [--tag=Meme,AI] [--status=PUBLISH|TRADE|ALL] [--sort=DESC] [--version=]
+fourmeme token-list [--queryMode=Binance|USD1] [--listedPancake=true|false]  (legacy shortcut; infers listType BIN/BIN_DEX or USD1/USD1_DEX)
 ```
+Legacy `listedPancake=false` maps to `status=PUBLISH`; use `--status=ALL` when you need all statuses.
 
 **Token detail and trading info**  
 ```bash
@@ -221,11 +224,11 @@ fourmeme token-get <tokenAddress>
 ```
 API: GET `/private/token/get/v2?address=...`
 
-**Rankings**  
+**Rankings** — `POST /public/token/ranking`  
 ```bash
-fourmeme token-rankings <orderBy> [--barType=HOUR24]
+fourmeme token-rankings <orderBy|type> [--barType=HOUR24] [--pageSize=20] [--symbol=] [--version=] [--rankingKind=] [--minCap=] [--maxCap=] [--minVol=] [--maxVol=] [--minHold=] [--maxHold=] …
 ```
-orderBy: `Time` (newest) | `ProgressDesc` | `TradingDesc` (24h volume; barType HOUR24) | `Hot` | `Graduated`. Output JSON.
+Legacy orderBy: `Time` → NEW | `ProgressDesc` | `TradingDesc` (volume window via `--barType`: HOUR24→VOL_DAY_1, HOUR4, HOUR1, MIN30, MIN5) | `Hot` | `Graduated` → DEX. Or pass API `type` directly (e.g. `VOL_DAY_1`, `CAP`, `BURN`). Output JSON.
 
 ### quote-buy / quote-sell (estimate only; no transaction)
 
@@ -328,8 +331,8 @@ See [references/tax-token-query.md](references/tax-token-query.md).
 This skill supports a flow to discover tokens, get details, quote, and execute. The following is an example workflow, not a trading recommendation: discover → detail → quote → execute.
 
 1. **Discover** (one or more of):  
-   - **Rankings**: `fourmeme token-rankings <orderBy>` (orderBy = Hot, TradingDesc, Time, ProgressDesc, Graduated); use token addresses from the response.  
-   - **List**: `fourmeme token-list [--orderBy=] [--labels=] ...` to filter and get addresses.  
+   - **Rankings**: `fourmeme token-rankings <orderBy or type>` (legacy: Hot, TradingDesc, Time, ProgressDesc, Graduated; or e.g. VOL_DAY_1); use token addresses from the response.  
+   - **List**: `fourmeme token-list` (`/public/token/search`) with `--orderBy` / `--type`, `--labels` / `--tag`, etc., to filter and get addresses.  
    - **On-chain events**: `fourmeme events <fromBlock> [toBlock]`; parse token addresses from TokenCreate/TokenPurchase, etc., for "newly created" or "recent trades" strategies.
 2. **Get details**: For each candidate, call `fourmeme token-get <address>` (REST detail and trading info) or `fourmeme token-info <address>` (on-chain version, tokenManager, price, offers) to filter or display.
 3. **Quote**: `fourmeme quote-buy <token> <amountWei> [fundsWei]` / `fourmeme quote-sell <token> <amountWei>` for estimated cost or proceeds.

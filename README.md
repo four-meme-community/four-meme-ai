@@ -31,9 +31,9 @@ When the user needs to create or trade meme tokens on four.meme (BSC), use the *
 | `create-chain` | `<createArgHex>` `<signatureHex>` `[--value=<wei>]` or `--` (stdin JSON) | Submit createToken on BSC. Env: PRIVATE_KEY. |
 | `create-instant` | `--image=` `--name=` `--short-name=` `--desc=` `--label=` `[--web-url=]` `[--twitter-url=]` `[--telegram-url=]` `[--pre-sale=<BNB>]` `[--fee-plan=false]` `[--value=<wei>]` `[--tax-options=<path>]` or `[--tax-token --tax-fee-rate=5 ...]` | One-shot create (API + chain). Same options as create-api plus `--value=` override. Env: PRIVATE_KEY. |
 | `token-info` | `<tokenAddress>` | On-chain token info (Helper3). |
-| `token-list` | `[--orderBy=Hot]` `[--pageIndex=1]` `[--pageSize=30]` `[--tokenName=]` `[--symbol=]` `[--labels=]` `[--listedPancake=false]` | REST token list. |
+| `token-list` | Legacy query flags or `[--type=]` `[--listType=]` `[--keyword=]` `[--tag=]` `[--status=]` `[--sort=]` `[--version=]` … (also legacy `--queryMode=Binance|USD1` to infer `listType`) | POST `/public/token/search` (token list). |
 | `token-get` | `<tokenAddress>` | REST token detail + trading info. |
-| `token-rankings` | `<orderBy>` `[--barType=HOUR24]` | Rankings. orderBy: `Time|ProgressDesc|TradingDesc|Hot|Graduated`. |
+| `token-rankings` | `<orderBy or type>` `[--barType=]` `[--pageSize=]` `[--symbol=]` `[--version=]` `[--rankingKind=]` `[--minCap=]` `[--maxCap=]` `[--minVol=]` `[--maxVol=]` `[--minHold=]` `[--maxHold=]` … | POST `/public/token/ranking`; legacy orderBy or native type (e.g. `VOL_DAY_1`). |
 | `quote-buy` | `<tokenAddress>` `<amountWei>` `[fundsWei]` | Estimate buy (no tx). Use 0 for amount or funds. |
 | `quote-sell` | `<tokenAddress>` `<amountWei>` | Estimate sell (no tx). |
 | `buy` | `<token>` `amount` `<amountWei>` `<maxFundsWei>` | Buy fixed amount. Env: PRIVATE_KEY. |
