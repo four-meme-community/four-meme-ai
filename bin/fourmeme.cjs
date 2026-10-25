@@ -8,6 +8,9 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 
+// Run tsx with the current node binary and no shell, so args reach scripts verbatim.
+const tsxCli = require.resolve('tsx/cli');
+
 // Load .env from cwd (e.g. your project dir) so PRIVATE_KEY, BSC_RPC_URL etc. work when running from a project
 require('dotenv').config({ path: path.join(process.cwd(), '.env') });
 
@@ -37,9 +40,8 @@ const commands = {
 
 function run(scriptName, args = []) {
   const scriptPath = path.join(scriptsDir, scriptName);
-  const result = spawnSync('npx', ['tsx', scriptPath, ...args], {
+  const result = spawnSync(process.execPath, [tsxCli, scriptPath, ...args], {
     stdio: 'inherit',
-    shell: true,
     cwd: root,
   });
   process.exit(result.status ?? 1);
@@ -146,15 +148,13 @@ if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
 }
 
 if (cmd === 'verify') {
-  const r1 = spawnSync('npx', ['tsx', path.join(scriptsDir, 'get-public-config.ts')], {
+  const r1 = spawnSync(process.execPath, [tsxCli, path.join(scriptsDir, 'get-public-config.ts')], {
     stdio: 'inherit',
-    shell: true,
     cwd: root,
   });
   if (r1.status !== 0) process.exit(r1.status ?? 1);
-  const r2 = spawnSync('npx', ['tsx', path.join(scriptsDir, 'verify-events.ts')], {
+  const r2 = spawnSync(process.execPath, [tsxCli, path.join(scriptsDir, 'verify-events.ts')], {
     stdio: 'inherit',
-    shell: true,
     cwd: root,
   });
   process.exit(r2.status ?? 1);

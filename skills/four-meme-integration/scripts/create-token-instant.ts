@@ -12,6 +12,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { createWalletClient, http, parseAbi } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc } from 'viem/chains';
@@ -50,7 +51,8 @@ async function main() {
 
   const apiScript = path.join(__dirname, 'create-token-api.ts');
   const args = process.argv.slice(2);
-  const child = spawnSync('npx', ['tsx', apiScript, ...args], {
+  const tsxCli = createRequire(import.meta.url).resolve('tsx/cli');
+  const child = spawnSync(process.execPath, [tsxCli, apiScript, ...args], {
     env: process.env,
     encoding: 'utf8',
     stdio: ['inherit', 'pipe', 'inherit'],
