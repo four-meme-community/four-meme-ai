@@ -1,6 +1,6 @@
 {
   "name": "@four-meme/four-meme-ai",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Four.meme AI skills for creating and trading meme tokens (BSC only)",
   "license": "MIT",
   "type": "module",
