@@ -67,7 +67,7 @@ async function main() {
     transactionHash: log.transactionHash,
     args: log.args as object,
   }));
-  console.log(JSON.stringify(out, null, 2));
+  console.log(JSON.stringify(out, (_key, value) => (typeof value === 'bigint' ? value.toString() : value), 2));
 }
 
 main().catch((e) => {
