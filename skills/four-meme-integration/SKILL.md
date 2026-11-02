@@ -109,6 +109,8 @@ Set **PRIVATE_KEY** and optionally **BSC_RPC_URL** via the process environment s
 
 ### Declared and optional environment variables
 
+**RPC support for `events` and `verify`:** These commands call `eth_getLogs`. A BSC endpoint that works for other reads may reject log queries, even for the default 50-block verification range. If the default RPC returns `Request exceeds defined limit` / `limit exceeded`, set `BSC_RPC_URL` to a BSC endpoint that supports `eth_getLogs` for your requested range, then rerun the read-only command. These commands do not need `PRIVATE_KEY`; keep any RPC credentials out of chat and committed files.
+
 - **Declared in registry metadata** (injected by OpenClaw when skill is enabled): **PRIVATE_KEY** (required for write operations). Optional in metadata: **BSC_RPC_URL** (scripts fall back to default BSC RPC if unset).
 - **Not in metadata; optional, may be set in env or project `.env`**: **BSC_RPC_URL**, **CREATION_FEE_WEI** (extra BNB on create), **WEB_URL**, **TWITTER_URL**, **TELEGRAM_URL**, **PRE_SALE**, **FEE_PLAN**, **8004_NFT_ADDRESS** / **EIP8004_NFT_ADDRESS**. Only **PRIVATE_KEY** is required for signing; others have defaults or are used only for specific commands (see Create token flow, EIP-8004, etc.). Tax token params use CLI only (`--tax-options=` or `--tax-token --tax-fee-rate=...`).
 
