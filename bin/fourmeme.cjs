@@ -127,6 +127,7 @@ Commands and parameters:
 
   events <fromBlock> [toBlock]
     TokenManager2 events (BSC). toBlock default: latest.
+    Requires eth_getLogs support; see BSC_RPC_URL below.
 
   tax-info <tokenAddress>
     TaxToken fee/tax config (creatorType 5). Read-only.
@@ -136,6 +137,8 @@ Commands and parameters:
 
 Env: PRIVATE_KEY (required for create-api, create-chain, create-instant, buy, sell, send, 8004-register).
      BSC_RPC_URL, CREATION_FEE_WEI optional. See SKILL.md.
+     For events/verify, if the default RPC returns "limit exceeded", set BSC_RPC_URL
+     to a BSC endpoint supporting eth_getLogs for the requested block range. No PRIVATE_KEY needed.
 `);
 }
 

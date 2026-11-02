@@ -38,7 +38,7 @@ async function main() {
     fromBlock: fromBlock < 0n ? 0n : fromBlock,
     toBlock,
   });
-  console.log(JSON.stringify({ fromBlock: String(fromBlock), toBlock: String(toBlock), count: logs.length, events: logs.map((l) => ({ eventName: l.eventName, blockNumber: Number(l.blockNumber), args: l.args })) }, null, 2));
+  console.log(JSON.stringify({ fromBlock: String(fromBlock), toBlock: String(toBlock), count: logs.length, events: logs.map((l) => ({ eventName: l.eventName, blockNumber: Number(l.blockNumber), args: l.args })) }, (_key, value) => (typeof value === 'bigint' ? value.toString() : value), 2));
 }
 
 main().catch((e) => {
