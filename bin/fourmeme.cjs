@@ -126,16 +126,17 @@ Commands and parameters:
     EIP-8004 query NFT balance. Read-only.
 
   events <fromBlock> [toBlock]
-    TokenManager2 events (BSC). toBlock default: latest.
+    TokenManager2 events (BSC). toBlock default: latest. Requires an RPC with eth_getLogs.
 
   tax-info <tokenAddress>
     TaxToken fee/tax config (creatorType 5). Read-only.
 
   verify
-    (no args) Config + events last 50 blocks. Read-only.
+    (no args) Config + events last 50 blocks. Read-only. Requires an RPC with eth_getLogs.
 
 Env: PRIVATE_KEY (required for create-api, create-chain, create-instant, buy, sell, send, 8004-register).
-     BSC_RPC_URL, CREATION_FEE_WEI optional. See SKILL.md.
+     BSC_RPC_URL, CREATION_FEE_WEI optional. Events default to https://bsc-rpc.publicnode.com.
+     If BSC_RPC_URL is set, choose an endpoint that supports eth_getLogs. See SKILL.md.
 `);
 }
 

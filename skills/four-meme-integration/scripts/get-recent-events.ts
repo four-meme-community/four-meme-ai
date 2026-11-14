@@ -28,8 +28,12 @@ function getRpcUrl(chainId: number): string {
     console.error('Events are only on BSC (chainId 56). TokenManager2 is on BSC.');
     process.exit(1);
   }
-  return process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org';
+  return process.env.BSC_RPC_URL || 'https://bsc-rpc.publicnode.com';
 }
+
+/** Preserve full precision when serializing viem event arguments. */
+const bigintToString = (_key: string, value: unknown) =>
+  typeof value === 'bigint' ? value.toString() : value;
 
 async function main() {
   const chainId = parseInt(process.argv[2], 10);
@@ -67,7 +71,7 @@ async function main() {
     transactionHash: log.transactionHash,
     args: log.args as object,
   }));
-  console.log(JSON.stringify(out, null, 2));
+  console.log(JSON.stringify(out, bigintToString, 2));
 }
 
 main().catch((e) => {

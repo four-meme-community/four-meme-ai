@@ -105,7 +105,7 @@ This skill declares `requires.env: ["PRIVATE_KEY"]` and `primaryEnv: "PRIVATE_KE
 Set **PRIVATE_KEY** and optionally **BSC_RPC_URL** via the process environment so they are available when running `npx fourmeme` or `node bin/fourmeme.cjs`:
 
 - **.env file**: Put a `.env` file in **the directory where you run the `fourmeme` command** (i.e. your project / working directory). Example: if you run `fourmeme quote-buy ...` from `/path/to/my-project`, place `.env` at `/path/to/my-project/.env`. The CLI automatically loads `.env` from that current working directory. Use lines like `PRIVATE_KEY=...` and `BSC_RPC_URL=...`. Do not commit `.env`; add it to `.gitignore`.
-- **Shell export**: `export PRIVATE_KEY=your_hex_key` and `export BSC_RPC_URL=https://bsc-dataseed.binance.org` (or another BSC RPC), then run `npx fourmeme <command> ...`.
+- **Shell export**: `export PRIVATE_KEY=your_hex_key` and `export BSC_RPC_URL=https://bsc-rpc.publicnode.com` (or another BSC RPC), then run `npx fourmeme <command> ...`.
 
 ### Declared and optional environment variables
 
@@ -316,6 +316,7 @@ Fetch TokenCreate, TokenPurchase, TokenSale, LiquidityAdded on BSC.
 fourmeme events <fromBlock> [toBlock]
 ```
 Omit toBlock for latest. Real-time subscription: [references/event-listening.md](references/event-listening.md).
+Event queries default to `https://bsc-rpc.publicnode.com`. If `BSC_RPC_URL` is set, it must support `eth_getLogs`; the BNB Chain public dataseed endpoints do not support that method. Event `uint256` arguments are decimal strings in JSON.
 
 ### tax-info (TaxToken fee/tax)
 

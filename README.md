@@ -66,21 +66,21 @@ Create a file named `.env` in the repo root (same directory as `package.json`):
 ```bash
 # .env (do not commit this file)
 PRIVATE_KEY=your_hex_private_key_with_or_without_0x_prefix
-BSC_RPC_URL=https://bsc-dataseed.binance.org
+BSC_RPC_URL=https://bsc-rpc.publicnode.com
 ```
 
-Then run commands so that the shell loads `.env` before invoking `fourmeme` (e.g. use a tool that loads `.env`, or `export $(cat .env | xargs)` then `npx fourmeme ...`). The scripts themselves do not load `.env`; you must ensure the variables are in the environment when `npx fourmeme` runs.
+The `fourmeme` CLI loads `.env` from the directory where you run it.
 
 **Option 2: export in the shell**
 
 ```bash
 export PRIVATE_KEY=your_hex_private_key
-export BSC_RPC_URL=https://bsc-dataseed.binance.org
+export BSC_RPC_URL=https://bsc-rpc.publicnode.com
 npx fourmeme create-instant --image=./logo.png --name=MyToken --short-name=MTK --desc="Desc" --label=AI
 ```
 
 - **PRIVATE_KEY**: Required for any command that signs or sends a transaction (create-api, create-chain, buy, sell, send, 8004-register). Hex string; `0x` prefix optional.
-- **BSC_RPC_URL**: Optional. BSC RPC endpoint; if unset, scripts use a default public BSC RPC.
+- **BSC_RPC_URL**: Optional. BSC RPC endpoint; event commands default to PublicNode, which supports `eth_getLogs`. If set, use an endpoint that supports `eth_getLogs` for `events` and `verify`.
 
 **Security**: Do not commit `.env` or share your private key. Add `.env` to `.gitignore` if you use a `.env` file.
 

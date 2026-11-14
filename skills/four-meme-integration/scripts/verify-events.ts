@@ -22,9 +22,13 @@ const EVENTS = [
   parseAbiItem('event LiquidityAdded(address base, uint256 offers, address quote, uint256 funds)'),
 ];
 
+/** Preserve full precision when serializing viem event arguments. */
+const bigintToString = (_key: string, value: unknown) =>
+  typeof value === 'bigint' ? value.toString() : value;
+
 async function main() {
   const blockCount = parseInt(process.argv[2] ?? '50', 10) || 50;
-  const rpcUrl = process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org';
+  const rpcUrl = process.env.BSC_RPC_URL || 'https://bsc-rpc.publicnode.com';
   const client = createPublicClient({
     chain: bsc,
     transport: http(rpcUrl),
@@ -38,7 +42,7 @@ async function main() {
     fromBlock: fromBlock < 0n ? 0n : fromBlock,
     toBlock,
   });
-  console.log(JSON.stringify({ fromBlock: String(fromBlock), toBlock: String(toBlock), count: logs.length, events: logs.map((l) => ({ eventName: l.eventName, blockNumber: Number(l.blockNumber), args: l.args })) }, null, 2));
+  console.log(JSON.stringify({ fromBlock: String(fromBlock), toBlock: String(toBlock), count: logs.length, events: logs.map((l) => ({ eventName: l.eventName, blockNumber: Number(l.blockNumber), args: l.args })) }, bigintToString, 2));
 }
 
 main().catch((e) => {
