@@ -29,7 +29,7 @@ const TOKEN_MANAGER2 = '0x5c952063c7fc8610FFDB798152D69F0B9550762b';
 
 const client = createPublicClient({
   chain: bsc,
-  transport: http(process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org'),
+  transport: http(process.env.BSC_RPC_URL || 'https://bsc-rpc.publicnode.com'),
 });
 
 const logs = await client.getLogs({
@@ -73,3 +73,4 @@ const unwatch = client.watchContractEvent({
 ## Script
 
 Use `fourmeme events <fromBlock> [toBlock]` (script `get-recent-events.ts`) to fetch the four event types in a block range and output JSON. See the events section in [SKILL.md](../SKILL.md).
+The RPC must support `eth_getLogs`. The CLI defaults to PublicNode for event queries, while `BSC_RPC_URL` overrides it. JSON event `uint256` arguments are decimal strings to preserve precision.

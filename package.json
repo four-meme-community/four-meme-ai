@@ -16,6 +16,7 @@
     "fourmeme": "node bin/fourmeme.cjs",
     "verify": "tsx skills/four-meme-integration/scripts/get-public-config.ts && tsx skills/four-meme-integration/scripts/verify-events.ts",
     "build": "tsc",
+    "test": "node --test test/*.test.cjs",
     "config": "tsx skills/four-meme-integration/scripts/get-public-config.ts",
     "create-api": "tsx skills/four-meme-integration/scripts/create-token-api.ts",
     "create-chain": "tsx skills/four-meme-integration/scripts/create-token-chain.ts",
