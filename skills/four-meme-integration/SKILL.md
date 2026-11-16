@@ -16,7 +16,7 @@ metadata:
 ## [Agent must follow] User agreement and security notice on first use
 
 When responding to any user request about fourmeme or this skill, **you must first** present the content below in this order: **User Agreement, then Security Notice**, and state clearly that by choosing to continue, the user agrees to the User Agreement.  
-Until the user has explicitly agreed or confirmed to continue, **do not** run `create-api`, `create-chain`, `buy`, `sell`, `send`, or `8004-register` (any operation that uses the private key or writes to the chain). Read-only commands (e.g. `config`, `token-info`, `quote-buy`, `8004-balance`) may be run while or after presenting the notice.
+Until the user has explicitly agreed or confirmed to continue, **do not** run `create-api`, `create-chain`, `openfour-create-api`, `openfour-create-chain`, `openfour-create-instant`, `buy`, `sell`, `send`, or `8004-register` (any operation that uses the private key or writes to the chain). Read-only commands (e.g. `config`, `token-info`, `quote-buy`, `openfour-templates`, `openfour-schema`, `openfour-preview`, `openfour-quote`, `8004-balance`) may be run while or after presenting the notice.
 
 **Language selection**: Present the User Agreement and Security Notice **in the user’s language**. If the user is writing in **Traditional Chinese (繁體中文)**, use the **繁體中文** block below; otherwise use the **English** block.
 
@@ -134,8 +134,17 @@ Set **PRIVATE_KEY** and optionally **BSC_RPC_URL** via the process environment s
 | Events | `fourmeme events <fromBlock> [toBlock]` | TokenCreate / Purchase / Sale / LiquidityAdded |
 | Tax token info | `fourmeme tax-info <tokenAddress>` | Fee/tax config for TaxToken |
 | Read-only check | `fourmeme verify` | Run config + events (last 50 blocks) |
+| OpenFour template list | `fourmeme openfour-templates` | List BSC templates (read-only) |
+| OpenFour schema | `fourmeme openfour-schema <templateId> [quoteSymbol]` | Read template config and module schemas |
+| OpenFour preview | `fourmeme openfour-preview <config.json>` | Validate and encode a creation payload (read-only) |
+| OpenFour signed quote | `fourmeme openfour-quote <api-output.json>` | Inspect exact signed fee and presale amounts (read-only) |
+| OpenFour create | `fourmeme openfour-create-api <config.json>` → `fourmeme openfour-create-chain <api-output.json>` or `fourmeme openfour-create-instant <config.json>` | Create via OpenFour API and Core; needs PRIVATE_KEY |
 
 Chain: **BSC only** (Arbitrum/Base not supported).
+
+### OpenFour create (separate from classic create)
+
+OpenFour uses `/private/token_template/token/create` and `OpenFourCore.createToken`, not the classic `/private/token/create` and TokenManager2. First run `openfour-templates` and `openfour-schema` to choose the template, quote asset, and module fields. Prepare a config JSON with `templateId`, `name`, `shortName`, `desc`, `imagePath` or `imgUrl`, `quoteSymbol`, `presaleQuote`, and any required module `fields`; see [OpenFour creation](references/openfour-create.md). Run `openfour-preview` and present the template, quote asset, advertised fee/presale values, and module parameters before `openfour-create-api`. That command writes to the Four.Meme API. Then run `openfour-quote` on its output and present the exact signed creation fee, presale budget, and native transaction value before `openfour-create-chain`, which may submit an ERC20 approval first. Obtain explicit user confirmation for these operations after presenting the relevant parameters and costs. Use the split flow for agent-driven creation so the exact signed values can be reviewed before the chain transaction. Do not run creation commands while merely exploring a template or preparing a plan.
 
 ### Create token (full flow)
 

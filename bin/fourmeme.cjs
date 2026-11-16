@@ -38,11 +38,11 @@ const commands = {
   verify: null, // special: run config + verify-events
 };
 
-function run(scriptName, args = []) {
+function run(scriptName, args = [], cwd = root) {
   const scriptPath = path.join(scriptsDir, scriptName);
   const result = spawnSync(process.execPath, [tsxCli, scriptPath, ...args], {
     stdio: 'inherit',
-    cwd: root,
+    cwd,
   });
   process.exit(result.status ?? 1);
 }
@@ -84,6 +84,30 @@ Commands and parameters:
               --tax-recipient-address= --tax-min-sharing=100000
     Label: Meme|AI|Defi|Games|Infra|De-Sci|Social|Depin|Charity|Others
     One-shot: API + submit createToken. Env: PRIVATE_KEY.
+
+  openfour-templates
+    List published OpenFour templates on BSC. Read-only.
+
+  openfour-schema <templateId> [quoteSymbol]
+    Get template config and on-chain module parameter schemas. Read-only.
+
+  openfour-preview <config.json>
+    Validate and preview an OpenFour create payload. Read-only; no login or upload.
+
+  openfour-quote <api-output.json|->
+    Decode signed createArg to inspect fee, presale and native value. Read-only.
+
+  openfour-create-api <config.json>
+    Login, upload image if needed, and request signed createArg from OpenFour API.
+    Env: PRIVATE_KEY. Does not send a chain transaction.
+
+  openfour-create-chain <api-output.json|->
+    Simulate and submit OpenFourCore.createToken. '-' reads API output from stdin.
+    Env: PRIVATE_KEY. May approve ERC20 quote for a presale.
+
+  openfour-create-instant <config.json>
+    OpenFour API + on-chain create in one command. Requires maxCreateFeeWei in config.
+    Env: PRIVATE_KEY.
 
   token-info <tokenAddress>
     On-chain token info (Helper3). No auth.
@@ -159,6 +183,15 @@ if (cmd === 'verify') {
     cwd: root,
   });
   process.exit(r2.status ?? 1);
+}
+
+if (cmd.startsWith('openfour-')) {
+  const subcommand = cmd.slice('openfour-'.length);
+  if (!['templates', 'schema', 'preview', 'quote', 'create-api', 'create-chain', 'create-instant'].includes(subcommand)) {
+    console.error(`Unknown command: ${cmd}`);
+    process.exit(1);
+  }
+  run('openfour-cli.ts', [subcommand, ...argv.slice(1)], process.cwd());
 }
 
 const script = commands[cmd];
