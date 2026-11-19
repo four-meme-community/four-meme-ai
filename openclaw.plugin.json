@@ -1,7 +1,7 @@
 {
   "id": "four-meme-ai",
   "name": "Four.meme AI",
-  "description": "Create and trade meme tokens on four.meme (BSC). CLI fourmeme + skill.",
+  "description": "Create and trade classic and OpenFour tokens on four.meme (BSC). CLI fourmeme + skill.",
   "skills": ["skills/four-meme-integration"],
   "configSchema": {
     "type": "object",

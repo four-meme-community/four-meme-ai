@@ -1,7 +1,7 @@
 {
   "name": "@four-meme/four-meme-ai",
   "version": "1.0.9",
-  "description": "Four.meme AI skills for creating and trading meme tokens (BSC only)",
+  "description": "Four.meme AI skills for classic and OpenFour creation and trading (BSC only)",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -16,7 +16,7 @@
     "fourmeme": "node bin/fourmeme.cjs",
     "verify": "tsx skills/four-meme-integration/scripts/get-public-config.ts && tsx skills/four-meme-integration/scripts/verify-events.ts",
     "build": "tsc",
-    "test": "node --test test/*.test.cjs",
+    "test": "node --import tsx --test test/*.test.cjs test/*.test.mjs",
     "config": "tsx skills/four-meme-integration/scripts/get-public-config.ts",
     "create-api": "tsx skills/four-meme-integration/scripts/create-token-api.ts",
     "create-chain": "tsx skills/four-meme-integration/scripts/create-token-chain.ts",
