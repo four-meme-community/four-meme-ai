@@ -1,12 +1,12 @@
 # four-meme-ai
 
-Four.meme AI skills for creating and trading meme tokens on **BSC only**. Lets agents integrate with [four.meme](https://four.meme) for token creation, buy/sell flows, Tax tokens, transfers, and EIP‑8004 identity NFTs.
+Four.meme AI skills for creating and trading meme tokens on **BSC only**. Lets agents integrate with [four.meme](https://four.meme) for classic and OpenFour token creation, buy/sell flows, Tax tokens, transfers, and EIP‑8004 identity NFTs.
 
 ## Skills
 
 | Skill | Description |
 |-------|-------------|
-| `four-meme-integration` | Create classic Four.Meme and OpenFour tokens on **BSC only**, trade classic tokens, query token info/lists/rankings, listen to TokenManager2 events, query TaxToken tax info, send BNB/ERC20, and register/query EIP‑8004 identity NFTs. TokenManager V1 is not supported. |
+| `four-meme-integration` | Create classic Four.Meme and OpenFour tokens on **BSC only**, trade classic tokens and OpenFour internal-market tokens, query token info/lists/rankings, listen to TokenManager2 events, query TaxToken tax info, send BNB/ERC20, and register/query EIP‑8004 identity NFTs. TokenManager V1 is not supported. |
 
 Safety, user agreement, and detailed agent behavior requirements are defined in [`skills/four-meme-integration/SKILL.md`](skills/four-meme-integration/SKILL.md) (bilingual User Agreement & Security Notice). Claude-specific guidance lives in [`CLAUDE.md`](CLAUDE.md).
 
@@ -16,7 +16,8 @@ When the user needs to create or trade meme tokens on four.meme (BSC), use the *
 
 - **Create token (API + chain)**: Use **`fourmeme create-instant ...`** for one-shot create (API + submit createToken in one command), or the two-step flow `fourmeme create-api ...` → `fourmeme create-chain ...`. Both use the same args: `--image=`, `--name=`, `--short-name=`, `--desc=`, `--label=` (and optional `--pre-sale=<BNB>` in ether units, `--web-url=`, etc.). Creation is BSC only; value (launch fee + presale if any) is computed automatically for create-instant. See `SKILL.md` and `references/create-token-scripts.md` for full details and required user questions.
 - **OpenFour create**: Use `fourmeme openfour-templates` and `openfour-schema` to select a preset and read its module fields, then `openfour-preview`, `openfour-create-api` → `openfour-create-chain`, or `openfour-create-instant`. See [OpenFour creation](skills/four-meme-integration/references/openfour-create.md). OpenFour creation uses a different API and Core contract from the classic flow.
-- **Trade (buy/sell)**: Use Helper3 `getTokenInfo` to get version and tokenManager; only version 2 (TokenManager2) is supported. Use `fourmeme quote-buy`/`quote-sell` for estimates, then `fourmeme buy`/`sell` to execute. **BSC only.**
+- **Classic trade (buy/sell)**: Use Helper3 `getTokenInfo` to get version and tokenManager; only version 2 (TokenManager2) is supported. Use `fourmeme quote-buy`/`quote-sell` for estimates, then `fourmeme buy`/`sell` to execute. **BSC only.**
+- **OpenFour trade**: Use `fourmeme openfour-trade-quote` to inspect an internal-market quote and limits, then `fourmeme openfour-trade` to execute. See [OpenFour trading](skills/four-meme-integration/references/openfour-trade.md). Migrated tokens need a separate DEX route.
 - **Event listening**: `fourmeme events <fromBlock> [toBlock]` to fetch TokenCreate, TokenPurchase, TokenSale, LiquidityAdded from TokenManager2. See `references/event-listening.md`.
 - **Tax token fee/tax info**: `fourmeme tax-info <tokenAddress>`. See `references/tax-token-query.md` and `token-tax-info.md`.
 - **Send BNB/ERC20**: `fourmeme send <toAddress> <amountWei> [tokenAddress]` to transfer from the trading wallet.
@@ -38,6 +39,8 @@ When the user needs to create or trade meme tokens on four.meme (BSC), use the *
 | `openfour-create-api` | `<config.json>` | Login, upload image if needed, and get signed createArg. Env: PRIVATE_KEY. |
 | `openfour-create-chain` | `<api-output.json\|->` | Simulate and submit OpenFourCore.createToken; may approve ERC20 presale quote. Env: PRIVATE_KEY. |
 | `openfour-create-instant` | `<config.json>` | OpenFour API and chain creation together; requires `maxCreateFeeWei` in config. Env: PRIVATE_KEY. |
+| `openfour-trade-quote` | `<config.json>` | Estimate OpenFour buy/sell with slippage and settlement limits. Read-only. |
+| `openfour-trade` | `<config.json>` | Approve if needed, simulate and submit an OpenFour internal-market buy/sell. Env: PRIVATE_KEY. |
 | `token-info` | `<tokenAddress>` | On-chain token info (Helper3). |
 | `token-list` | Legacy query flags or `[--type=]` `[--listType=]` `[--keyword=]` `[--tag=]` `[--status=]` `[--sort=]` `[--version=]` … (also legacy `--queryMode=Binance|USD1` to infer `listType`) | POST `/public/token/search` (token list). |
 | `token-get` | `<tokenAddress>` | REST token detail + trading info. |

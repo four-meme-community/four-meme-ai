@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repo provides the **four-meme-integration** skill for AI agents: create classic Four.Meme and OpenFour tokens on **BSC only**, and trade classic tokens using **TokenManager2** and **TokenManagerHelper3**. OpenFour creation uses **OpenFourCore**. TokenManager V1 is **not** supported by this skill.
+This repo provides the **four-meme-integration** skill for AI agents: create and trade classic Four.Meme and OpenFour tokens on **BSC only**. Classic trading uses **TokenManager2** and **TokenManagerHelper3**; OpenFour internal-market trading uses **OpenFourCore** and **OpenFourTools**. TokenManager V1 is **not** supported by this skill.
 
 The authoritative specification for this skill is `skills/four-meme-integration/SKILL.md`. Claude/Claude Code should treat that file as the main contract for behavior, safety, and command usage.
 
@@ -42,7 +42,7 @@ The SKILL defines a **User Agreement & Security Notice** (bilingual: English + T
 
 1. On first use of this skill in a conversation, present the User Agreement and Security Notice in the user’s language (use the 繁體中文 block when the user writes in Traditional Chinese; otherwise use English).
 2. Make clear that **continuing to use this plugin/skill implies acceptance of the User Agreement**.
-3. **MUST NOT** run any operation that uses a private key or writes on-chain (e.g. `create-api`, `create-chain`, `openfour-create-api`, `openfour-create-chain`, `openfour-create-instant`, `buy`, `sell`, `send`, `8004-register`) until the user has explicitly agreed or confirmed to continue.
+3. **MUST NOT** run any operation that uses a private key or writes on-chain (e.g. `create-api`, `create-chain`, `openfour-create-api`, `openfour-create-chain`, `openfour-create-instant`, `openfour-trade`, `buy`, `sell`, `send`, `8004-register`) until the user has explicitly agreed or confirmed to continue.
 4. May run read‑only commands (e.g. `config`, `token-info`, `quote-buy`, `8004-balance`) while or after presenting the notice.
 
 Never ask the user to paste a private key into chat. All private keys must come from environment / config (e.g. `PRIVATE_KEY`) as described in `SKILL.md`.
@@ -75,6 +75,7 @@ Key commands (full list and parameters in `SKILL.md`):
 - `fourmeme create-api` / `fourmeme create-chain` – Create a classic token (API + on-chain).
 - `fourmeme openfour-templates` / `openfour-schema` / `openfour-preview` / `openfour-quote` – Inspect OpenFour creation read-only.
 - `fourmeme openfour-create-api` / `openfour-create-chain` – Create an OpenFour token after reviewing the signed fee and presale amount.
+- `fourmeme openfour-trade-quote` / `openfour-trade` – Quote and execute an OpenFour internal-market trade. Review settlement, slippage and limits before submission; migrated tokens need a separate DEX route.
 - `fourmeme token-info` / `token-list` / `token-get` / `token-rankings` – On-chain info and REST queries.
 - `fourmeme quote-buy` / `quote-sell` – Estimate buy/sell without sending tx.
 - `fourmeme buy` / `sell` – Execute buy/sell via TokenManager2 (V2 only).

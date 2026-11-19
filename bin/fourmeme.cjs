@@ -109,6 +109,12 @@ Commands and parameters:
     OpenFour API + on-chain create in one command. Requires maxCreateFeeWei in config.
     Env: PRIVATE_KEY.
 
+  openfour-trade-quote <config.json>
+    Read-only estimate and transaction limits for OpenFour internal-market buy/sell.
+
+  openfour-trade <config.json>
+    Simulate and submit an OpenFour internal-market buy/sell. Env: PRIVATE_KEY.
+
   token-info <tokenAddress>
     On-chain token info (Helper3). No auth.
 
@@ -158,7 +164,7 @@ Commands and parameters:
   verify
     (no args) Config + events last 50 blocks. Read-only. Requires an RPC with eth_getLogs.
 
-Env: PRIVATE_KEY (required for create-api, create-chain, create-instant, buy, sell, send, 8004-register).
+Env: PRIVATE_KEY (required for create-api, create-chain, create-instant, OpenFour create/trade execution, buy, sell, send, 8004-register).
      BSC_RPC_URL, CREATION_FEE_WEI optional. Events default to https://bsc-rpc.publicnode.com.
      If BSC_RPC_URL is set, choose an endpoint that supports eth_getLogs. See SKILL.md.
 `);
@@ -183,6 +189,10 @@ if (cmd === 'verify') {
     cwd: root,
   });
   process.exit(r2.status ?? 1);
+}
+
+if (cmd === 'openfour-trade' || cmd === 'openfour-trade-quote') {
+  run('openfour-trade-cli.ts', [cmd === 'openfour-trade' ? 'execute' : 'quote', ...argv.slice(1)], process.cwd());
 }
 
 if (cmd.startsWith('openfour-')) {

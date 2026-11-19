@@ -1,7 +1,7 @@
 {
   "name": "@four-meme/four-meme-ai",
   "version": "1.0.9",
-  "description": "Four.meme AI skills for classic and OpenFour creation and classic trading (BSC only)",
+  "description": "Four.meme AI skills for classic and OpenFour creation and trading (BSC only)",
   "license": "MIT",
   "type": "module",
   "bin": {
